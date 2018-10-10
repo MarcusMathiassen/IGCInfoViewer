@@ -37,12 +37,10 @@ func handleRequest(c *gin.Context) {
 }
 
 func main() {
-
 	port := os.Getenv("PORT")
-	if port == "" { // ....if heroku didn't give us a port (DEBUG)
+	if port == "" { // for running locally
 		port = "8080"
 	}
-
 	// s := "http://skypolaris.org/wp-content/uploads/IGS%20Files/Madrid%20to%20Jerez.igc"
 	// track, err := igc.ParseLocation(s)
 	// if err != nil {

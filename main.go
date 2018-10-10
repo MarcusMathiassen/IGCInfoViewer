@@ -1,14 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-	"os"
-	"time"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 )
 
 type Uptime struct {
@@ -17,51 +12,14 @@ type Uptime struct {
 	version string
 }
 
-func handleBadRequest(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func handleBadRequest(c *gin.Context) {
 	fmt.Println("handleBadRequest ...")
-	fmt.Fprintf(w, "Bad request.\n")
 }
 
-func handleRequest(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func handleRequest(c *gin.Context) {
 	fmt.Println("handleRequest ...")
-	if r.Method == "GET" {
-		name := ps.ByName("name")
-		switch name {
-		case "api":
-			u := Uptime{
-				uptime:  time.Now().String(),
-				info:    "Service for IGC tracks.",
-				version: "v1",
-			}
-			b, err := json.Marshal(u)
-			if err != nil {
-				log.Fatal(err)
-			}
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Printf("%s", b)
-		}
-	}
 }
-func handleUptime(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	fmt.Println("handleUptime ...")
-	if r.Method == "GET" {
-		name := ps.ByName("name")
-		switch name {
-		case "api":
-			u := Uptime{
-				uptime:  time.Now().String(),
-				info:    "Service for IGC tracks.",
-				version: "v1",
-			}
-			b, err := json.Marshal(u)
-			if err != nil {
-				log.Fatal(err)
-			}
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Printf("%s", b)
-		}
-	}
-}
+
 func main() {
 
 	// s := "http://skypolaris.org/wp-content/uploads/IGS%20Files/Madrid%20to%20Jerez.igc"
@@ -71,16 +29,8 @@ func main() {
 	// }
 	// fmt.Printf("Pilot: %s, gliderType: %s, date: %s\n", track.Pilot, track.GliderType, track.Date.String())
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	router := httprouter.New()
-	router.GET("/", handleBadRequest)
-	router.GET("/igcinfo/api", handleRequest)
-
-	fmt.Println("Listening on port " + port + "...")
-	if err := http.ListenAndServe(":"+port, router); err != nil {
-		panic(err)
-	}
+	r := gin.Default()
+	r.GET("/", handleBadRequest)
+	r.GET("/igcinfo/api", handleRequest)
+	r.Run()
 }

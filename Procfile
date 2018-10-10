@@ -1,1 +1,1 @@
-web: assignment_1
+web: main

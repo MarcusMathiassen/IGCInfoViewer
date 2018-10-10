@@ -1,0 +1,12 @@
+{
+  "name": "IGC Info Viewer",
+  "description": "IMT2681 Assignment 1: IGC Info Viewer",
+  "keywords": [
+    "IGC",
+    "go",
+    "Info",
+    "Viewer"
+  ],
+  "website": "https://github.com/MarcusMathiassen/IMT2681_Assignment_1.git",
+  "repository": "https://github.com/MarcusMathiassen/IMT2681_Assignment_1.git"
+}

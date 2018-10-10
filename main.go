@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-
-	"github.com/marni/goigc"
 )
 
 type Uptime struct {
@@ -66,12 +64,12 @@ func handleUptime(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 }
 func main() {
 
-	s := "http://skypolaris.org/wp-content/uploads/IGS%20Files/Madrid%20to%20Jerez.igc"
-	track, err := igc.ParseLocation(s)
-	if err != nil {
-		fmt.Errorf("Problem reading the track %s", err)
-	}
-	fmt.Printf("Pilot: %s, gliderType: %s, date: %s\n", track.Pilot, track.GliderType, track.Date.String())
+	// s := "http://skypolaris.org/wp-content/uploads/IGS%20Files/Madrid%20to%20Jerez.igc"
+	// track, err := igc.ParseLocation(s)
+	// if err != nil {
+	// 	fmt.Errorf("Problem reading the track %s", err)
+	// }
+	// fmt.Printf("Pilot: %s, gliderType: %s, date: %s\n", track.Pilot, track.GliderType, track.Date.String())
 
 	port := os.Getenv("PORT")
 	if port == "" {

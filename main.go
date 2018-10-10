@@ -6,12 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Uptime struct {
-	uptime  string
-	info    string
-	version string
-}
-
 func handleBadRequest(c *gin.Context) {
 	fmt.Println("handleBadRequest ...")
 }

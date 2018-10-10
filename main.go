@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -37,13 +38,17 @@ func handleRequest(c *gin.Context) {
 
 func main() {
 
+	port := os.Getenv("PORT")
+	if port == "" { // ....if heroku didn't give us a port (DEBUG)
+		port = "8080"
+	}
+
 	// s := "http://skypolaris.org/wp-content/uploads/IGS%20Files/Madrid%20to%20Jerez.igc"
 	// track, err := igc.ParseLocation(s)
 	// if err != nil {
 	// 	fmt.Errorf("Problem reading the track %s", err)
 	// }
 	// fmt.Printf("Pilot: %s, gliderType: %s, date: %s\n", track.Pilot, track.GliderType, track.Date.String())
-
 	r := gin.Default()
 	r.GET("/igcinfo/api", func(c *gin.Context) {
 		c.Writer.Header().Set("Content-Type", "application/json")
@@ -54,5 +59,5 @@ func main() {
 		})
 	})
 	r.GET("/igcinfo/api/:name", handleRequest)
-	r.Run()
+	r.Run(":" + port)
 }

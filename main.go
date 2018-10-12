@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"net/http"
 	"os"
 	"time"
@@ -12,19 +11,12 @@ import (
 
 var startTime = time.Now()
 
-func fmtDuration(duration time.Duration) string {
-	days := int64(duration.Hours() / 24)
-	years := days / 365
-	months := years / 12
-	hours := int64(math.Mod(duration.Hours(), 24))
-	minutes := int64(math.Mod(duration.Minutes(), 60))
-	seconds := int64(math.Mod(duration.Seconds(), 60))
-
-	return fmt.Sprintf("P%dY%dM%dDT%dH%dM%dS", years, months, days, hours, minutes, seconds)
+func fmtTimeDifference(t time.Time) string {
+	diff := time.Since(t)
+	return diff.String()
 }
-
 func getUptime() string {
-	return fmtDuration(time.Since(startTime))
+	return fmtTimeDifference(startTime)
 }
 
 func handleBadRequest(c *gin.Context) {
@@ -32,10 +24,12 @@ func handleBadRequest(c *gin.Context) {
 }
 
 func handleRequest(c *gin.Context) {
-	c.String(http.StatusOK, "Hello %s", c.Param("name"))
-	fmt.Println("handleRequest ...")
+	url, err := readAll(c.Request.Body)
+	if err != nil {
+		panic(err)
+	}
+	c.JSON(http.StatusOK, gin.H{"url": url})
 }
-
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" { // for running locally
@@ -49,13 +43,13 @@ func main() {
 	// fmt.Printf("Pilot: %s, gliderType: %s, date: %s\n", track.Pilot, track.GliderType, track.Date.String())
 	r := gin.Default()
 	r.GET("/igcinfo/api", func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Type", "application/json")
+		// c.Writer.Header().Set("Content-Type", "application/json")
 		c.IndentedJSON(http.StatusOK, gin.H{
 			"uptime":  getUptime(),
 			"info":    "Service for IGC tracks.",
 			"version": "v1",
 		})
 	})
-	r.GET("/igcinfo/api/:name", handleRequest)
+	r.POST("/igcinfo/api/igc", handleRequest)
 	r.Run(":" + port)
 }

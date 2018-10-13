@@ -51,7 +51,11 @@ func main() {
 	api := r.Group("/igcinfo/api")
 	{
 		api.POST("/igc", func(c *gin.Context) {
-			url := c.PostForm("url")
+			url, exists := c.GetPostForm("url")
+			if !exists {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "missing key 'url'"})
+				return
+			}
 			if filepath.Ext(url) != ".igc" {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "not a .igc file"})
 				return

@@ -5,22 +5,14 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
-	"github.com/marni/goigc"
-
 	"github.com/gin-gonic/gin"
+	"github.com/marni/goigc"
 )
 
-type TrackInfo struct {
-	pilot       string
-	glider      string
-	gliderID    string
-	trackLength string
-}
-
-var trackInfos []TrackInfo
 var tracks []string
 var startTime = time.Now()
 
@@ -40,11 +32,14 @@ func getUptime() string {
 }
 
 func main() {
+
 	port := os.Getenv("PORT")
 	if port == "" { // for running locally
 		port = "8080"
 	}
+
 	r := gin.Default()
+
 	r.GET("/igcinfo/api", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"uptime":  getUptime(),
@@ -52,54 +47,50 @@ func main() {
 			"version": "v1",
 		})
 	})
+
 	api := r.Group("/igcinfo/api")
 	{
 		api.POST("/igc", func(c *gin.Context) {
 			url := c.PostForm("url")
+			if filepath.Ext(url) != ".igc" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "not a .igc file"})
+				return
+			}
 			id := len(tracks)
 			tracks = append(tracks, url)
 			c.JSON(http.StatusOK, gin.H{"id": id})
 		})
 
+		api.GET("/igc", func(c *gin.Context) {
+			ids := make([]int, len(tracks))
+			for i := range ids {
+				ids[i] = i
+			}
+			c.JSON(http.StatusOK, ids)
+		})
+
 		api.GET("/igc/:id", func(c *gin.Context) {
 			id, err := strconv.Atoi(c.Param("id"))
 			if err != nil {
-				panic(err)
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
 			}
 			if id >= len(tracks) {
-				c.AbortWithStatus(http.StatusNotFound)
+				c.Status(http.StatusNotFound)
 				return
 			}
 			trackURL := tracks[id]
 			track, err := igc.ParseLocation(trackURL)
 
-			trackInfo := TrackInfo{
-				pilot:       track.Pilot,
-				glider:      track.GliderType,
-				gliderID:    track.GliderID,
-				trackLength: track.UniqueID,
-			}
-			// trackInfos[track.UniqueID] = trackInfo
-			trackInfos = append(trackInfos, trackInfo)
-
 			c.JSON(http.StatusOK, gin.H{
 				"H_date":       track.Header,
-				"pilot":        trackInfo.pilot,
-				"glider":       trackInfo.glider,
-				"glider_id":    trackInfo.gliderID,
-				"track_length": trackInfo.trackLength,
+				"pilot":        track.Pilot,
+				"glider":       track.GliderType,
+				"glider_id":    track.GliderID,
+				"track_length": track.UniqueID,
 			})
 		})
-		api.GET("/igc", func(c *gin.Context) {
-			// We return an empty array if there are no tracks yet.
-			// Gin turns the empty 'tracks' array into 'null'
-			//  so we create a temporary '[]int' to satisfy the requirements.
-			if len(tracks) == 0 {
-				c.JSON(http.StatusOK, []int{})
-				return
-			}
-			c.JSON(http.StatusOK, tracks)
-		})
 	}
+
 	r.Run(":" + port)
 }

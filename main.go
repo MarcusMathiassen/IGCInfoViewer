@@ -37,12 +37,12 @@ func getTrackByID(id int) {
 
 func main() {
 
+	router := gin.Default()
+
 	port := os.Getenv("PORT")
 	if port == "" { // for running locally
 		port = "8080"
 	}
-
-	router := gin.Default()
 
 	router.GET("/igcinfo/api", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

@@ -28,6 +28,26 @@
 			"Rev": "fbdcbd22751c7174d4f363995fca296e4670726b"
 		},
 		{
+			"ImportPath": "github.com/golang/geo/r1",
+			"Rev": "635502111454809c6a2c3e92d5ef0454706164f5"
+		},
+		{
+			"ImportPath": "github.com/golang/geo/r2",
+			"Rev": "635502111454809c6a2c3e92d5ef0454706164f5"
+		},
+		{
+			"ImportPath": "github.com/golang/geo/r3",
+			"Rev": "635502111454809c6a2c3e92d5ef0454706164f5"
+		},
+		{
+			"ImportPath": "github.com/golang/geo/s1",
+			"Rev": "635502111454809c6a2c3e92d5ef0454706164f5"
+		},
+		{
+			"ImportPath": "github.com/golang/geo/s2",
+			"Rev": "635502111454809c6a2c3e92d5ef0454706164f5"
+		},
+		{
 			"ImportPath": "github.com/golang/protobuf/proto",
 			"Comment": "v1.2.0-18-g7716a98",
 			"Rev": "7716a980bceefe9a0213654823d9ea62d23b87a2"
@@ -36,6 +56,11 @@
 			"ImportPath": "github.com/json-iterator/go",
 			"Comment": "1.1.5-8-g2433035",
 			"Rev": "2433035e513208b0f7bd5b50d0aecd889b2c1ff8"
+		},
+		{
+			"ImportPath": "github.com/marni/goigc",
+			"Comment": "v0.1.0-10-g71f274d",
+			"Rev": "71f274dd21ef320ccbb6c6271c7df7fd8a908779"
 		},
 		{
 			"ImportPath": "github.com/mattn/go-isatty",

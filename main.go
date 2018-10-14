@@ -24,11 +24,11 @@ type trackInfo struct {
 }
 
 var (
-	trackInfos []trackInfo
-	startTime  = time.Now()
+	trackInfos []trackInfo  // Holds track information of uploaded igc files
+	startTime  = time.Now() // Used for getting the uptime of the service
 )
 
-func fmtDuration(duration time.Duration) string {
+func fmtDurationAsISO8601(duration time.Duration) string {
 	days := int64(duration.Hours() / 24)
 	years := days / 365
 	months := years / 12
@@ -40,7 +40,7 @@ func fmtDuration(duration time.Duration) string {
 }
 
 func getUptime() string {
-	return fmtDuration(time.Since(startTime))
+	return fmtDurationAsISO8601(time.Since(startTime))
 }
 
 func getAndValidateID(c *gin.Context) (int, error) {

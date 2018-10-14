@@ -31,6 +31,10 @@ func getUptime() string {
 	return fmtDuration(time.Since(startTime))
 }
 
+func getTrackByID(id int) {
+
+}
+
 func main() {
 
 	port := os.Getenv("PORT")
@@ -38,9 +42,9 @@ func main() {
 		port = "8080"
 	}
 
-	r := gin.Default()
+	router := gin.Default()
 
-	r.GET("/igcinfo/api", func(c *gin.Context) {
+	router.GET("/igcinfo/api", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"uptime":  getUptime(),
 			"info":    "Service for IGC tracks.",
@@ -48,7 +52,7 @@ func main() {
 		})
 	})
 
-	api := r.Group("/igcinfo/api")
+	api := router.Group("/igcinfo/api")
 	{
 		api.POST("/igc", func(c *gin.Context) {
 			url, exists := c.GetPostForm("url")
@@ -72,7 +76,6 @@ func main() {
 			}
 			c.JSON(http.StatusOK, ids)
 		})
-
 		api.GET("/igc/:id", func(c *gin.Context) {
 			id, err := strconv.Atoi(c.Param("id"))
 			if err != nil {
@@ -80,9 +83,10 @@ func main() {
 				return
 			}
 			if id >= len(tracks) {
-				c.Status(http.StatusNotFound)
+				c.JSON(http.StatusNotFound, gin.H{"error": "id not found"})
 				return
 			}
+
 			trackURL := tracks[id]
 			track, err := igc.ParseLocation(trackURL)
 
@@ -94,7 +98,35 @@ func main() {
 				"track_length": track.UniqueID,
 			})
 		})
+
+		api.GET("/igc/:id/:field", func(c *gin.Context) {
+			field := c.Param("field")
+			id, err := strconv.Atoi(c.Param("id"))
+			fmt.Printf("id: %d  field: %s", id, field)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			if id >= len(tracks) {
+				c.Status(http.StatusNotFound)
+				return
+			}
+			trackURL := tracks[id]
+			track, err := igc.ParseLocation(trackURL)
+			switch field {
+			case "H_date":
+				c.JSON(http.StatusOK, gin.H{"H_date": track.Header})
+			case "pilot":
+				c.JSON(http.StatusOK, gin.H{"pilot": track.Pilot})
+			case "glider":
+				c.JSON(http.StatusOK, gin.H{"glider": track.GliderType})
+			case "glider_id":
+				c.JSON(http.StatusOK, gin.H{"glider_id": track.GliderID})
+			case "track_length":
+				c.JSON(http.StatusOK, gin.H{"track_length": track.UniqueID})
+			}
+		})
 	}
 
-	r.Run(":" + port)
+	router.Run(":" + port)
 }

@@ -1,8 +1,8 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"os"
@@ -17,14 +17,16 @@ import (
 type trackInfo struct {
 	ID          int
 	TrackLength float64
-	Pilot       string `form:"pilot" json:"pilot"`
-	Glider      string `form:"glider" json:"glider"`
-	GliderID    string `form:"glider_id" json:"glider_id"`
-	HDate       string `form:"H_date" json:"H_date"`
+	Pilot       string
+	Glider      string
+	GliderID    string
+	HDate       string
 }
 
-var trackInfos []trackInfo
-var startTime = time.Now()
+var (
+	trackInfos []trackInfo
+	startTime  = time.Now()
+)
 
 func fmtDuration(duration time.Duration) string {
 	days := int64(duration.Hours() / 24)
@@ -41,20 +43,32 @@ func getUptime() string {
 	return fmtDuration(time.Since(startTime))
 }
 
-func (t trackInfo) getFieldByName(fieldName string) string {
+func getAndValidateID(c *gin.Context) (int, error) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return 0, err
+	}
+	if id >= len(trackInfos) {
+		return 0, errors.New("index out of bounds")
+	}
+	return id, nil
+}
+
+func (t trackInfo) getFieldByName(fieldName string) (string, bool) {
 	switch fieldName {
 	case "pilot":
-		return t.Pilot
+		return t.Pilot, true
 	case "glider":
-		return t.Glider
+		return t.Glider, true
 	case "glider_id":
-		return t.GliderID
+		return t.GliderID, true
 	case "H_date":
-		return t.HDate
+		return t.HDate, true
 	case "track_length":
-		return strconv.FormatFloat(t.TrackLength, 'f', 6, 64)
+		return strconv.FormatFloat(t.TrackLength, 'f', 6, 64), true
+	default:
+		return "", false
 	}
-	return "Unknown"
 }
 
 func main() {
@@ -84,7 +98,7 @@ func main() {
 
 			track, err := igc.ParseLocation(url)
 			if err != nil {
-				log.Fatal(err)
+				return
 			}
 
 			points := track.Points
@@ -116,16 +130,11 @@ func main() {
 		})
 
 		api.GET("/igc/:id", func(c *gin.Context) {
-			id, err := strconv.Atoi(c.Param("id"))
+			id, err := getAndValidateID(c)
 			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				c.Status(http.StatusNotFound)
 				return
 			}
-			if id >= len(trackInfos) {
-				c.JSON(http.StatusNotFound, gin.H{"error": "id not found"})
-				return
-			}
-
 			trackInfo := trackInfos[id]
 
 			c.JSON(http.StatusOK, gin.H{
@@ -138,18 +147,20 @@ func main() {
 		})
 
 		api.GET("/igc/:id/:field", func(c *gin.Context) {
-			field := c.Param("field")
-			id, err := strconv.Atoi(c.Param("id"))
+			id, err := getAndValidateID(c)
 			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-			if id >= len(trackInfos) {
 				c.Status(http.StatusNotFound)
 				return
 			}
+
 			trackInfo := trackInfos[id]
-			c.String(http.StatusOK, trackInfo.getFieldByName(field))
+			fieldRequested, fieldExists := trackInfo.getFieldByName(c.Param("field"))
+			if !fieldExists {
+				c.Status(http.StatusNotFound)
+				return
+			}
+
+			c.String(http.StatusOK, fieldRequested)
 		})
 	}
 

@@ -102,7 +102,6 @@ func main() {
 		api.GET("/igc/:id/:field", func(c *gin.Context) {
 			field := c.Param("field")
 			id, err := strconv.Atoi(c.Param("id"))
-			fmt.Printf("id: %d  field: %s", id, field)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return

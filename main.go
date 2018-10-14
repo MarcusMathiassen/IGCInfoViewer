@@ -91,7 +91,7 @@ func main() {
 			track, err := igc.ParseLocation(trackURL)
 
 			c.JSON(http.StatusOK, gin.H{
-				"H_date":       track.Header,
+				"H_date":       "TEMP HEADER FIX MEEEE",
 				"pilot":        track.Pilot,
 				"glider":       track.GliderType,
 				"glider_id":    track.GliderID,
@@ -114,15 +114,15 @@ func main() {
 			track, err := igc.ParseLocation(trackURL)
 			switch field {
 			case "H_date":
-				c.JSON(http.StatusOK, gin.H{"H_date": track.Header})
+				c.String(http.StatusOK, "TEMP HEADER FIX MEEEE")
 			case "pilot":
-				c.JSON(http.StatusOK, gin.H{"pilot": track.Pilot})
+				c.String(http.StatusOK, track.Pilot)
 			case "glider":
-				c.JSON(http.StatusOK, gin.H{"glider": track.GliderType})
+				c.String(http.StatusOK, track.GliderType)
 			case "glider_id":
-				c.JSON(http.StatusOK, gin.H{"glider_id": track.GliderID})
+				c.String(http.StatusOK, track.GliderID)
 			case "track_length":
-				c.JSON(http.StatusOK, gin.H{"track_length": track.UniqueID})
+				c.String(http.StatusOK, track.UniqueID)
 			}
 		})
 	}

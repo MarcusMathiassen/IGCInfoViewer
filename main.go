@@ -14,34 +14,17 @@ import (
 	"github.com/marni/goigc"
 )
 
-type TrackInfo struct {
+type trackInfo struct {
 	ID          int
 	TrackLength float64
-	Pilot       string `form:"pilot" json:"pilot" binding: required`
-	Glider      string `form:"glider" json:"glider" binding: required`
-	GliderID    string `form:"glider_id" json:"glider_id" binding: required`
-	HDate       string `form:"H_date" json:"H_date" binding: required`
+	Pilot       string `form:"pilot" json:"pilot"`
+	Glider      string `form:"glider" json:"glider"`
+	GliderID    string `form:"glider_id" json:"glider_id"`
+	HDate       string `form:"H_date" json:"H_date"`
 }
 
-var trackInfos []TrackInfo
+var trackInfos []trackInfo
 var startTime = time.Now()
-
-func hsin(theta float64) float64 {
-	return math.Pow(math.Sin(theta/2), 2)
-}
-func distanceInMetersBetweenGPSCoords(lat1, lon1, lat2, lon2 float64) float64 {
-	var la1, lo1, la2, lo2, r float64
-	la1 = lat1 * math.Pi / 180
-	lo1 = lon1 * math.Pi / 180
-	la2 = lat2 * math.Pi / 180
-	lo2 = lon2 * math.Pi / 180
-
-	r = 6378100
-
-	h := hsin(la2-la1) + math.Cos(la1)*math.Cos(la2)*hsin(lo2-lo1)
-
-	return 2 * r * math.Asin(math.Sqrt(h))
-}
 
 func fmtDuration(duration time.Duration) string {
 	days := int64(duration.Hours() / 24)
@@ -58,7 +41,7 @@ func getUptime() string {
 	return fmtDuration(time.Since(startTime))
 }
 
-func (t TrackInfo) getField(fieldName string) string {
+func (t trackInfo) getFieldByName(fieldName string) string {
 	switch fieldName {
 	case "pilot":
 		return t.Pilot
@@ -78,24 +61,19 @@ func main() {
 
 	router := gin.Default()
 
-	port := os.Getenv("PORT")
-	if port == "" { // for running locally
-		port = "8080"
-	}
-
-	router.GET("/igcinfo/api", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"uptime":  getUptime(),
-			"info":    "Service for IGC tracks.",
-			"version": "v1",
-		})
-	})
-
 	api := router.Group("/igcinfo/api")
 	{
+		api.GET("", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"uptime":  getUptime(),
+				"info":    "Service for IGC tracks.",
+				"version": "v1",
+			})
+		})
+
 		api.POST("/igc", func(c *gin.Context) {
-			url, exists := c.GetPostForm("url")
-			if !exists {
+			url, urlExists := c.GetPostForm("url")
+			if !urlExists {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "missing key 'url'"})
 				return
 			}
@@ -116,7 +94,7 @@ func main() {
 			}
 
 			id := len(trackInfos)
-			trackInfo := TrackInfo{
+			trackInfo := trackInfo{
 				ID:          id,
 				TrackLength: trackLength,
 				Pilot:       track.Pilot,
@@ -136,6 +114,7 @@ func main() {
 			}
 			c.JSON(http.StatusOK, ids)
 		})
+
 		api.GET("/igc/:id", func(c *gin.Context) {
 			id, err := strconv.Atoi(c.Param("id"))
 			if err != nil {
@@ -170,8 +149,14 @@ func main() {
 				return
 			}
 			trackInfo := trackInfos[id]
-			c.String(http.StatusOK, trackInfo.getField(field))
+			c.String(http.StatusOK, trackInfo.getFieldByName(field))
 		})
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		// for running locally
+		port = "8080"
 	}
 
 	router.Run(":" + port)

@@ -71,10 +71,6 @@ func (t trackInfo) getFieldByName(fieldName string) (string, bool) {
 	}
 }
 
-type url struct {
-	URL string `form:"user" json:"user" binding:"required"`
-}
-
 func main() {
 
 	router := gin.Default()

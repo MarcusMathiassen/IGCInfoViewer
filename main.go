@@ -71,6 +71,10 @@ func (t trackInfo) getFieldByName(fieldName string) (string, bool) {
 	}
 }
 
+type url struct {
+	URL string `form:"user" json:"user" binding:"required"`
+}
+
 func main() {
 
 	router := gin.Default()
@@ -86,11 +90,16 @@ func main() {
 		})
 
 		api.POST("/igc", func(c *gin.Context) {
-			url, urlExists := c.GetPostForm("url")
-			if !urlExists {
+			var json map[string]interface{}
+			var url string
+			if c.BindJSON(&json) == nil {
+				url = json["url"].(string)
+			}
+			if url == "" {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "missing key 'url'"})
 				return
 			}
+
 			if filepath.Ext(url) != ".igc" {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "not a .igc file"})
 				return

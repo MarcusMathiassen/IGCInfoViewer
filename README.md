@@ -3,6 +3,9 @@
 # About
 Online service that allows users to browse information about IGC files. IGC is an international file format for soaring track files that are used by paragliders and gliders.
 
+# Can be reached at
+https://igcinfoviewer.herokuapp.com
+
 # GET igcinfo/api
 What: meta information about the API
 Response type: application/json
